@@ -73,8 +73,8 @@ public class PropertiesStarterCommand implements CommandLineRunner {
                     }, threadPoolTaskExecutor);
                     //.thenApplyAsync();
         }).collect(Collectors.collectingAndThen(Collectors.toList(), MultithreadingUtils.joinResult()));
-//        var res1 = collect1.get();
-        collect1.get();
+        var res1 = collect1.get();
+        //collect1.get();
         //voidCompletableFuture.get();
         printExecutionTime("common work file", t1);
         long t2 = System.currentTimeMillis();
@@ -84,7 +84,7 @@ public class PropertiesStarterCommand implements CommandLineRunner {
                 .map(entry -> entry.getKey() + " : " + entry.getValue())
                 .collect(Collectors.joining("\n"));*/
 
-/*        Map<String, AtomicInteger> map2 = new HashMap<>();
+        Map<String, AtomicInteger> map2 = new HashMap<>();
         String keyName = "";
         for (Map<String, AtomicInteger> stringAtomicIntegerMap : res1) {
             for (Map.Entry<String, AtomicInteger> stringAtomicIntegerEntry : stringAtomicIntegerMap.entrySet()) {
@@ -96,10 +96,10 @@ public class PropertiesStarterCommand implements CommandLineRunner {
                     map2.put(keyName, stringAtomicIntegerEntry.getValue());
                 }
             }
-        }*/
+        }
 
 
-        String collect = map.entrySet().stream()
+        String collect = map2.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.comparing(AtomicInteger::get, Comparator.reverseOrder())))
                 .limit(10)
                 .map(entry -> entry.getKey() + " : " + entry.getValue())
@@ -148,9 +148,9 @@ public class PropertiesStarterCommand implements CommandLineRunner {
                 if (StringUtils.length(next) < charSize) {
                     continue;
                 }
-                putWordToMap(next, this.map);
+                putWordToMap(next, stringAtomicIntegerHashMap);
             }
-            return this.map;
+            return stringAtomicIntegerHashMap;
         }
     }
 }
