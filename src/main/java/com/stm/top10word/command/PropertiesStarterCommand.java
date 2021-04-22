@@ -3,6 +3,7 @@ package com.stm.top10word.command;
 import com.stm.top10word.utils.MultithreadingUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -15,17 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -33,7 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PropertiesStarterCommand implements CommandLineRunner {
 
-    int charSize = 10;
+    int charSize = 5;
     String delimiter = "\\W+";
     BlockingQueue<String> queue = new LinkedBlockingDeque<>(10000);
     Map<String, AtomicInteger> map = new ConcurrentHashMap<>();
@@ -63,33 +55,60 @@ public class PropertiesStarterCommand implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Path path = Paths.get("C:\\awork\\dealer\\tmp\\");
+        Path path = Paths.get("/home/maxim/locindex/prj/_test/_files/");
 
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setWaitForTasksToCompleteOnShutdown(true);
-        threadPoolTaskExecutor.setCorePoolSize(8);
+        threadPoolTaskExecutor.setCorePoolSize(4);
         threadPoolTaskExecutor.initialize();
         long t1 = System.currentTimeMillis();
         CompletableFuture<Void> voidCompletableFuture = CompletableFuture.runAsync(this::start);
-        CompletableFuture<List<Void>> collect1 = Files.list(path).map(f -> {
+        CompletableFuture<List<Map<String, AtomicInteger>>> collect1 = Files.list(path).map(f -> {
             return CompletableFuture
                     .supplyAsync(() -> {
                         long l = System.currentTimeMillis();
-                        readFileIntoBuffer(f);
+                        var temp = readFileIntoBuffer(f);
                         printExecutionTime("file:" + f.getFileName(), l);
-                    }, threadPoolTaskExecutor)
-                    .thenApplyAsync();
+                        return temp;
+                    }, threadPoolTaskExecutor);
+                    //.thenApplyAsync();
         }).collect(Collectors.collectingAndThen(Collectors.toList(), MultithreadingUtils.joinResult()));
-        collect1.get();
+        var res1 = collect1.get();
+        //collect1.get();
         //voidCompletableFuture.get();
         printExecutionTime("common work file", t1);
         long t2 = System.currentTimeMillis();
-        String collect = map.entrySet().stream()
+/*        String collect = map.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.comparing(AtomicInteger::get, Comparator.reverseOrder())))
+                .limit(10)
+                .map(entry -> entry.getKey() + " : " + entry.getValue())
+                .collect(Collectors.joining("\n"));*/
+
+        Map<String, AtomicInteger> map2 = new HashMap<>();
+        String keyName = "";
+        for (Map<String, AtomicInteger> stringAtomicIntegerMap : res1) {
+            for (Map.Entry<String, AtomicInteger> stringAtomicIntegerEntry : stringAtomicIntegerMap.entrySet()) {
+                keyName = stringAtomicIntegerEntry.getKey();
+                if(map2.containsKey(keyName)) {
+                    map2.get(keyName).set( map2.get(keyName).get() + stringAtomicIntegerEntry.getValue().get());
+                }
+                else {
+                    map2.put(keyName, stringAtomicIntegerEntry.getValue());
+                }
+            }
+        }
+
+
+        String collect = map2.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.comparing(AtomicInteger::get, Comparator.reverseOrder())))
                 .limit(10)
                 .map(entry -> entry.getKey() + " : " + entry.getValue())
                 .collect(Collectors.joining("\n"));
+
+
+
         printExecutionTime("find top 10", t2);
+        printExecutionTime("all work time", t1);
         log.info(collect);
     }
 
@@ -112,24 +131,88 @@ public class PropertiesStarterCommand implements CommandLineRunner {
         });
     }
 
+    private void removeWordToMap(String s, Map<String, AtomicInteger> map) {
+        //TODO если элемент один удалят ьвообще из памы его
+        map.compute(s, (key, value) -> {
+            if (value == null) {
+                return new AtomicInteger(0);
+            }
+            value.decrementAndGet();
+            return value;
+        });
+    }
+
     @SneakyThrows
     private Map<String, AtomicInteger> readFileIntoBuffer(Path file) {
         HashMap<String, AtomicInteger> stringAtomicIntegerHashMap = new HashMap<>();
         try (FileInputStream fis = new FileInputStream(file.toFile())) {
             FileChannel channel = fis.getChannel();
-            MappedByteBuffer map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            Scanner scanner = new Scanner(StandardCharsets.UTF_8.newDecoder().decode(map));
-            scanner.useLocale(Locale.getDefault());
-            scanner.useDelimiter(delimiter);
-            while (scanner.hasNext()) {
-                String next = scanner.next();
-                if (StringUtils.isEmpty(next)) {
-                    continue;
+
+            String seperators = " .,!@#$%^&*()_-+=/*!@#$%^&*()\\|`~\"'№;%:?";
+
+            Long channelSize = channel.size();
+            Long stepSize = 20L;
+            Long itterCount = channelSize / stepSize;
+
+            boolean wordIsBreak = false;
+            String savedWord = "";
+            String lastSymbol = "";
+            Long remainingSize;
+
+            MappedByteBuffer map;
+
+            for (long l = 0L; l <= itterCount; l++) {
+
+                remainingSize = channelSize - l * stepSize;
+                if ((l * stepSize <= channelSize) && (stepSize <= remainingSize)) {
+                    map = channel.map(FileChannel.MapMode.READ_ONLY, l * stepSize, stepSize);
+                    remainingSize = stepSize;
+
+                } else {
+                    map = channel.map(FileChannel.MapMode.READ_ONLY, l * stepSize, remainingSize);
                 }
-                if (StringUtils.length(next) < charSize) {
-                    continue;
+
+                lastSymbol = String.valueOf((char) map.get(Math.toIntExact(remainingSize - 1)));
+
+                if (seperators.contains(lastSymbol) && !wordIsBreak) {
+                    wordIsBreak = false;
+                } else {
+                    wordIsBreak = true;
                 }
-                putWordToMap(next, stringAtomicIntegerHashMap);
+
+                //MappedByteBuffer map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+                Scanner scanner = new Scanner(StandardCharsets.UTF_8.newDecoder().decode(map));
+                scanner.useLocale(Locale.getDefault());
+                scanner.useDelimiter(delimiter);
+
+                boolean firstStepInWhile = true;
+                boolean firstStepIsHasBreak = false;
+
+                while (scanner.hasNext()) {
+                    String next = scanner.next();
+                    if (!savedWord.equals("") && firstStepInWhile) {
+                        if (wordIsBreak && !seperators.contains(String.valueOf(next.charAt(0)))) {
+                            removeWordToMap(savedWord, stringAtomicIntegerHashMap);
+                            next = savedWord + next;
+                        } else {
+                            firstStepIsHasBreak = true;
+                        }
+                        savedWord = "";
+                    }
+                    firstStepInWhile = false;
+                    if (StringUtils.isEmpty(next)) {
+                        continue;
+                    }
+                    if (StringUtils.length(next) < charSize) {
+                        continue;
+                    }
+                    savedWord = next;
+                    putWordToMap(next, stringAtomicIntegerHashMap);
+                }
+
+                if (!wordIsBreak) {
+                    savedWord = "";
+                }
             }
             return stringAtomicIntegerHashMap;
         }
