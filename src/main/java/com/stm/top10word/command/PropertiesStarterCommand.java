@@ -131,24 +131,88 @@ public class PropertiesStarterCommand implements CommandLineRunner {
         });
     }
 
+    private void removeWordToMap(String s, Map<String, AtomicInteger> map) {
+        //TODO если элемент один удалят ьвообще из памы его
+        map.compute(s, (key, value) -> {
+            if (value == null) {
+                return new AtomicInteger(0);
+            }
+            value.decrementAndGet();
+            return value;
+        });
+    }
+
     @SneakyThrows
     private Map<String, AtomicInteger> readFileIntoBuffer(Path file) {
         HashMap<String, AtomicInteger> stringAtomicIntegerHashMap = new HashMap<>();
         try (FileInputStream fis = new FileInputStream(file.toFile())) {
             FileChannel channel = fis.getChannel();
-            MappedByteBuffer map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            Scanner scanner = new Scanner(StandardCharsets.UTF_8.newDecoder().decode(map));
-            scanner.useLocale(Locale.getDefault());
-            scanner.useDelimiter(delimiter);
-            while (scanner.hasNext()) {
-                String next = scanner.next();
-                if (StringUtils.isEmpty(next)) {
-                    continue;
+
+            String seperators = " .,!@#$%^&*()_-+=/*!@#$%^&*()\\|`~\"'№;%:?";
+
+            Long channelSize = channel.size();
+            Long stepSize = 20L;
+            Long itterCount = channelSize / stepSize;
+
+            boolean wordIsBreak = false;
+            String savedWord = "";
+            String lastSymbol = "";
+            Long remainingSize;
+
+            MappedByteBuffer map;
+
+            for (long l = 0L; l <= itterCount; l++) {
+
+                remainingSize = channelSize - l * stepSize;
+                if ((l * stepSize <= channelSize) && (stepSize <= remainingSize)) {
+                    map = channel.map(FileChannel.MapMode.READ_ONLY, l * stepSize, stepSize);
+                    remainingSize = stepSize;
+
+                } else {
+                    map = channel.map(FileChannel.MapMode.READ_ONLY, l * stepSize, remainingSize);
                 }
-                if (StringUtils.length(next) < charSize) {
-                    continue;
+
+                lastSymbol = String.valueOf((char) map.get(Math.toIntExact(remainingSize - 1)));
+
+                if (seperators.contains(lastSymbol) && !wordIsBreak) {
+                    wordIsBreak = false;
+                } else {
+                    wordIsBreak = true;
                 }
-                putWordToMap(next, stringAtomicIntegerHashMap);
+
+                //MappedByteBuffer map = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+                Scanner scanner = new Scanner(StandardCharsets.UTF_8.newDecoder().decode(map));
+                scanner.useLocale(Locale.getDefault());
+                scanner.useDelimiter(delimiter);
+
+                boolean firstStepInWhile = true;
+                boolean firstStepIsHasBreak = false;
+
+                while (scanner.hasNext()) {
+                    String next = scanner.next();
+                    if (!savedWord.equals("") && firstStepInWhile) {
+                        if (wordIsBreak && !seperators.contains(String.valueOf(next.charAt(0)))) {
+                            removeWordToMap(savedWord, stringAtomicIntegerHashMap);
+                            next = savedWord + next;
+                        } else {
+                            firstStepIsHasBreak = true;
+                        }
+                        savedWord = "";
+                    }
+                    firstStepInWhile = false;
+                    if (StringUtils.isEmpty(next)) {
+                        continue;
+                    }
+                    if (StringUtils.length(next) < charSize) {
+                        continue;
+                    }
+                    savedWord = next;
+                    putWordToMap(next, stringAtomicIntegerHashMap);
+                }
+
+                if (!wordIsBreak) {
+                    savedWord = "";
+                }
             }
             return stringAtomicIntegerHashMap;
         }
