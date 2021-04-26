@@ -1,7 +1,6 @@
 package com.stm.top10word.service.process.impl;
 
 import com.stm.top10word.configuration.ExecutorConfiguration;
-import com.stm.top10word.utils.BlockingQueueUtils;
 import com.stm.top10word.utils.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,8 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 
 import static org.junit.Assert.assertEquals;
