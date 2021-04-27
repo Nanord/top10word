@@ -8,10 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class Top10WordsServiceImplTest {
@@ -21,6 +18,7 @@ public class Top10WordsServiceImplTest {
     Map<String, Integer> map1;
     Map<String, Integer> map2;
     Map<String, Integer> map3;
+    Map<String, Integer> singleEntry;
 
     @Before
     public void setUp() {
@@ -68,35 +66,62 @@ public class Top10WordsServiceImplTest {
             put("Is?", 2);
             put("Vaas", 4);
         }};
-        top10WordsService.combineWordCountMap(map1);
+
+        singleEntry = new HashMap<String, Integer>() {{
+            put("RocknRolla", 2);
+        }};
     }
 
     @Test
-    public void resetWordCountMap() {
-
+    public void resetWordCountMapTest() {
+        top10WordsService.combineWordCountMap(map1);
         Assert.assertEquals(11, top10WordsService.getWordCountMapSize());
 
         top10WordsService.resetWordCountMap();
-
         Assert.assertEquals(0, top10WordsService.getWordCountMapSize());
 
     }
 
     @Test
-    public void combineWordCountMap() {
+    public void combineWordCountMapSizeTest() {
+        top10WordsService.combineWordCountMap(map1);
         Assert.assertEquals(11, top10WordsService.getWordCountMapSize());
 
         top10WordsService.combineWordCountMap(map3);
-
         Assert.assertEquals(12, top10WordsService.getWordCountMapSize());
     }
 
     @Test
-    public void receiveTop10Words() {
+    public void combineWordCountMapTest() {
+        top10WordsService.combineWordCountMap(map1);
+        top10WordsService.combineWordCountMap(singleEntry);
+
+        Map<String, Integer> expected = new HashMap<String, Integer>() {{
+            put("Did", 5);
+            put("I", 4);
+            put("Ever", 6);
+            put("Tell", 3);
+            put("You", 2);
+            put("What", 6);
+            put("The", 8);
+            put("Definition", 1);
+            put("Of", 7);
+            put("Insanity", 3);
+            put("Is?", 4);
+            put("RocknRolla", 2);
+        }};
+
+        Assert.assertTrue(expected.equals(top10WordsService.getWordCountMap()));
+
+    }
+
+    @Test
+    public void receiveTop10WordsTest() {
+        top10WordsService.combineWordCountMap(map1);
         top10WordsService.combineWordCountMap(map2);
         top10WordsService.combineWordCountMap(map3);
 
-        List top10 = top10WordsService.receiveTop10Words();
+        List<Pair<String, Integer>> top10 = top10WordsService.receiveTop10Words();
 
         List<Pair<String, Integer>> expected = new ArrayList<Pair<String, Integer>>(){{
             add(Pair.of("You", 5));
@@ -110,6 +135,21 @@ public class Top10WordsServiceImplTest {
             add(Pair.of("Of", 10));
             add(Pair.of("Ever", 9));
         }};
+
+        Collections.sort(top10, Comparator.comparing(p -> p.getLeft()));
+        Collections.sort(expected, Comparator.comparing(p -> p.getLeft()));
+        Assert.assertTrue(top10.equals(expected));
+    }
+
+    @Test
+    public void receiveTop10WordsWithSingleEntryMapTest() {
+        top10WordsService.combineWordCountMap(singleEntry);
+        List<Pair<String, Integer>> top10 = top10WordsService.receiveTop10Words();
+
+        List<Pair<String, Integer>> expected = new ArrayList<Pair<String, Integer>>(){{
+            add(Pair.of("RocknRolla", 2));
+        }};
+
         Assert.assertTrue(top10.equals(expected));
     }
 }
