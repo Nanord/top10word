@@ -5,8 +5,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 import java.util.Map;
 
-public interface TopTenWordsService {
+public interface Top10WordsService {
     void combineWordCountMap(Map<String, Integer> wordCountMapFromFile);
+
+    void resetWordCountMap();
 
     int getWordCountMapSize();
 

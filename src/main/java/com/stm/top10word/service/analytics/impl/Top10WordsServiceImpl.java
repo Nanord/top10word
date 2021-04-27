@@ -1,7 +1,7 @@
 package com.stm.top10word.service.analytics.impl;
 
 import com.google.common.collect.ImmutableMap;
-import com.stm.top10word.service.analytics.TopTenWordsService;
+import com.stm.top10word.service.analytics.Top10WordsService;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
@@ -9,10 +9,15 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class TopTenWordsServiceImpl implements TopTenWordsService {
+public class Top10WordsServiceImpl implements Top10WordsService {
 
     private Map<String, Integer> wordCountMap = new ConcurrentHashMap<>();
     private Comparator<Pair<String, Integer>> comparator = Comparator.comparingInt(Pair::getValue);
+
+    @Override
+    public void resetWordCountMap() {
+        wordCountMap.clear();
+    }
 
     @Override
     public void combineWordCountMap(Map<String, Integer> wordCountMapFromFile) {

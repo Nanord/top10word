@@ -1,7 +1,7 @@
 package com.stm.top10word.service.process.impl;
 
 import com.stm.top10word.exception.ProcessException;
-import com.stm.top10word.service.analytics.TopTenWordsService;
+import com.stm.top10word.service.analytics.Top10WordsService;
 import com.stm.top10word.service.process.BuilderProcessService;
 import com.stm.top10word.service.process.ProcessRunnerService;
 import com.stm.top10word.utils.CommonUtils;
@@ -34,7 +34,7 @@ public class Top10WordProcessRunnerServiceImpl implements ProcessRunnerService<S
     private final BuilderProcessService<Path, CompletableFuture<Map<String, Integer>>> wordCountingProcessBuilder;
 
     @Autowired
-    private final TopTenWordsService topTenWordsService;
+    private final Top10WordsService top10WordsService;
 
     @Override
     public List<Pair<String, Integer>> startProcess(String pathFolder) throws ProcessException {
@@ -44,11 +44,11 @@ public class Top10WordProcessRunnerServiceImpl implements ProcessRunnerService<S
                 .filter(Files::isReadable)
                 .map(wordCountingProcessBuilder::build)
                 .filter(Objects::nonNull)
-                .map(analysisFuture -> analysisFuture.thenAccept(topTenWordsService::combineWordCountMap))
+                .map(analysisFuture -> analysisFuture.thenAccept(top10WordsService::combineWordCountMap))
                 .collect(Collectors.collectingAndThen(Collectors.toList(), MultithreadingUtils.joinResult()));
         MultithreadingUtils.awaitCompletableFuture(process);
-        log.info("Count word:\n {}", topTenWordsService.getWordCountMapSize());
-        List<Pair<String, Integer>> top10Words = topTenWordsService.receiveTop10Words();
+        log.info("Count word:\n {}", top10WordsService.getWordCountMapSize());
+        List<Pair<String, Integer>> top10Words = top10WordsService.receiveTop10Words();
         stopWatch.stop();
         CommonUtils.printExecutionTime("Common work", stopWatch.getLastTaskTimeMillis());
         return top10Words;
