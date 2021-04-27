@@ -10,6 +10,7 @@ import com.stm.top10word.service.process.TerminalProcessService;
 import com.stm.top10word.service.worker.QueueWorkerService;
 import com.stm.top10word.service.worker.impl.FilterWordMapperQueueWorkerServiceImpl;
 import com.stm.top10word.service.worker.impl.FindWordInLineMapperQueueWorkerServiceImpl;
+import com.stm.top10word.utils.TestUtils;
 import lombok.var;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,9 +24,13 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
 
 
 @ExtendWith(SpringExtension.class)
@@ -48,7 +53,7 @@ public class WordCountingProcessBuilderProcessImplTest {
     public void prepare() {
 
         ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
-        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeReader", 1);
+        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeReader", 10);
         threadPoolTaskExecutorStarter = executorConfiguration.threadPoolTaskExecutorStarter();
         threadPoolTaskExecutorStarter.initialize();
 
@@ -65,7 +70,10 @@ public class WordCountingProcessBuilderProcessImplTest {
         List<WordFilterService> wordFilterServiceList = new ArrayList<>();
         wordFilterServiceList.add(new IsNotEmptyFilterServiceImpl());
         wordFilterServiceList.add(new IsNotNumericFilterServiceImpl());
-        wordFilterServiceList.add(new WordLengthFilterServiceImpl());
+        WordLengthFilterServiceImpl wordLengthFilterService = new WordLengthFilterServiceImpl();
+        ReflectionTestUtils.setField(wordLengthFilterService, "wordLength", 5);
+
+        wordFilterServiceList.add(wordLengthFilterService);
 
         filterWordWorker = new FilterWordMapperQueueWorkerServiceImpl(threadPoolTaskExecutorStarter, wordFilterServiceList);
         ReflectionTestUtils.setField(filterWordWorker, "queueSize", 3);
@@ -88,10 +96,8 @@ public class WordCountingProcessBuilderProcessImplTest {
                 + File.separator + "dirwithtextfiles"
                 + File.separator + "file");
 
-        var result = wordCountingProcessBuilderProcess.build(path);
-        //TODO ??????????????
-        System.out.println(result.get());
-
+        CompletableFuture<Map<String, Integer>> result = wordCountingProcessBuilderProcess.build(path);
+        assertEquals(3, result.get().get("Vestibulum").intValue());
     }
 
 }
