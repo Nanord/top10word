@@ -1,6 +1,10 @@
-package com.stm.top10word.utils;
+package com.stm.top10word;
 
-import java.util.*;
+import com.stm.top10word.utils.BlockingQueueUtils;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 
 public class TestUtils {

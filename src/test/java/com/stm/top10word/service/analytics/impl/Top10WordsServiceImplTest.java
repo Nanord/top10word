@@ -13,12 +13,12 @@ import java.util.*;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class Top10WordsServiceImplTest {
 
-    Top10WordsServiceImpl top10WordsService;
+    private Top10WordsServiceImpl top10WordsService;
 
-    Map<String, Integer> map1;
-    Map<String, Integer> map2;
-    Map<String, Integer> map3;
-    Map<String, Integer> singleEntry;
+    private Map<String, Integer> map1;
+    private Map<String, Integer> map2;
+    private Map<String, Integer> map3;
+    private Map<String, Integer> singleEntry;
 
     @Before
     public void setUp() {
@@ -111,7 +111,7 @@ public class Top10WordsServiceImplTest {
             put("RocknRolla", 2);
         }};
 
-        Assert.assertTrue(expected.equals(top10WordsService.getWordCountMap()));
+        Assert.assertEquals(expected, top10WordsService.getWordCountMap());
 
     }
 
@@ -136,9 +136,9 @@ public class Top10WordsServiceImplTest {
             add(Pair.of("Ever", 9));
         }};
 
-        Collections.sort(top10, Comparator.comparing(p -> p.getLeft()));
-        Collections.sort(expected, Comparator.comparing(p -> p.getLeft()));
-        Assert.assertTrue(top10.equals(expected));
+        top10.sort(Comparator.comparing(Pair::getLeft));
+        expected.sort(Comparator.comparing(Pair::getLeft));
+        Assert.assertEquals(top10, expected);
     }
 
     @Test
@@ -150,6 +150,6 @@ public class Top10WordsServiceImplTest {
             add(Pair.of("RocknRolla", 2));
         }};
 
-        Assert.assertTrue(top10.equals(expected));
+        Assert.assertEquals(top10, expected);
     }
 }

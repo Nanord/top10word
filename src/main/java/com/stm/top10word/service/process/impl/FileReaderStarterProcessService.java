@@ -1,9 +1,8 @@
 package com.stm.top10word.service.process.impl;
 
-import com.stm.top10word.exception.ReaderException;
+import com.stm.top10word.exception.ProcessStarterException;
 import com.stm.top10word.service.process.StarterProcessService;
 import com.stm.top10word.utils.BlockingQueueUtils;
-import com.stm.top10word.utils.CommonUtils;
 import com.stm.top10word.utils.MultithreadingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,7 +28,7 @@ public class FileReaderStarterProcessService implements StarterProcessService<Pa
     @Qualifier("threadPoolTaskExecutorStarter")
     private final ThreadPoolTaskExecutor threadPoolTaskExecutorStarter;
 
-    @Value("${starter.queue.size}")
+    @Value("${starter.queue.size:100000}")
     private Integer queueSize;
 
     @Override
@@ -45,8 +43,6 @@ public class FileReaderStarterProcessService implements StarterProcessService<Pa
 
     private void startReadFile(Path path, String stopWord, BlockingQueue<String> blockingQueue) {
         log.info("Start Read file: {}", path.getFileName());
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
         AtomicInteger countLine = new AtomicInteger(0);
         try (LineIterator lineIterator = FileUtils.lineIterator(path.toFile())) {
             lineIterator.forEachRemaining(line -> {
@@ -54,13 +50,10 @@ public class FileReaderStarterProcessService implements StarterProcessService<Pa
                 BlockingQueueUtils.putObjectInQueue(line, blockingQueue);
             });
         } catch (IOException e) {
-            throw new ReaderException(e);
+            throw new ProcessStarterException(e);
         } finally {
             BlockingQueueUtils.putObjectInQueue(stopWord, blockingQueue);
         }
-        stopWatch.stop();
-        CommonUtils.printExecutionTime("Start process. Read file \"" + path.getFileName() + "\". " + countLine.get() + " lines ",
-                stopWatch.getLastTaskTimeMillis());
     }
 
 }

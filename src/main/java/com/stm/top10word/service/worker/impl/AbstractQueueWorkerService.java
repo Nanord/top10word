@@ -1,6 +1,7 @@
 package com.stm.top10word.service.worker.impl;
 
 import com.stm.top10word.service.worker.QueueWorkerService;
+import com.stm.top10word.utils.BlockingQueueUtils;
 import com.stm.top10word.utils.MultithreadingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 @RequiredArgsConstructor
 public abstract class AbstractQueueWorkerService<I, O> implements QueueWorkerService<I, O> {
-    @Value("${worker.queue.size}")
+    @Value("${worker.queue.size:500000}")
     private Integer queueSize;
 
     @Qualifier("threadPoolTaskExecutorWorker")
@@ -23,7 +24,12 @@ public abstract class AbstractQueueWorkerService<I, O> implements QueueWorkerSer
     public BlockingQueue<O> doWork(I stopWord, O nextStopWord, BlockingQueue<I> inputQueue) {
         BlockingQueue<O> outputQueue = new LinkedBlockingQueue<>(queueSize);
         CompletableFuture.runAsync(() -> run(stopWord, nextStopWord, inputQueue, outputQueue), threadPoolTaskExecutorWorker)
-                .exceptionally(ex -> MultithreadingUtils.handleException("Error during work", this.getClass().getName(), ex));
+                .exceptionally(ex -> {
+                    BlockingQueueUtils.putObjectInQueue(nextStopWord, outputQueue);
+                    return MultithreadingUtils.handleException("Error during work",
+                            this.getClass().getName(),
+                            ex);
+                });
         return outputQueue;
     }
 

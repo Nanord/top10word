@@ -1,7 +1,7 @@
 package com.stm.top10word.service.process.impl;
 
 import com.stm.top10word.configuration.ExecutorConfiguration;
-import com.stm.top10word.utils.TestUtils;
+import com.stm.top10word.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

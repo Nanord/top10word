@@ -103,8 +103,8 @@ public class Top10WordProcessRunnerServiceImplTest {
             add(Pair.of("turpis", 2));
         }};
 
-        Collections.sort(top10, Comparator.comparing(p -> p.getLeft()));
-        Collections.sort(expected, Comparator.comparing(p -> p.getLeft()));
-        Assert.assertTrue(expected.equals(top10));
+        top10.sort(Comparator.comparing(Pair::getLeft));
+        expected.sort(Comparator.comparing(Pair::getLeft));
+        Assert.assertEquals(expected, top10);
     }
 }

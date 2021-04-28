@@ -5,7 +5,7 @@ import com.stm.top10word.service.filters.word.WordFilterService;
 import com.stm.top10word.service.filters.word.impl.IsNotEmptyFilterServiceImpl;
 import com.stm.top10word.service.filters.word.impl.IsNotNumericFilterServiceImpl;
 import com.stm.top10word.service.filters.word.impl.WordLengthFilterServiceImpl;
-import com.stm.top10word.utils.TestUtils;
+import com.stm.top10word.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -6,7 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 @ExtendWith(SpringExtension.class)
@@ -24,9 +25,9 @@ public class WordLengthFilterServiceImplTest{
 
         ReflectionTestUtils.setField(wordLengthFilterService, "wordLength", 5);
 
-        assertEquals(false, wordLengthFilterService.check(wordWith2SymbolsBad));
-        assertEquals(false, wordLengthFilterService.check(wordWith5SymbolsGood));
-        assertEquals(true, wordLengthFilterService.check(wordWith8SymbolsGood));
+        assertFalse(wordLengthFilterService.check(wordWith2SymbolsBad));
+        assertFalse(wordLengthFilterService.check(wordWith5SymbolsGood));
+        assertTrue(wordLengthFilterService.check(wordWith8SymbolsGood));
     }
 
 

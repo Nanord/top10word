@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 @Service("wordCountingProcessBuilder")
 @Slf4j
@@ -32,7 +31,8 @@ public class WordCountingProcessBuilderProcessImpl implements BuilderProcessServ
 
     @Override
     public CompletableFuture<Map<String, Integer>> build(Path path) {
-        String stopWord = UUID.randomUUID().toString();
+        String stopWord = "FLÜGGÅӘNKб€ČHIŒßØLĮÊN";
+//        String stopWord = UUID.randomUUID().toString();
         return Optional.ofNullable(path)
                 .map(file -> starterProcessService.start(path, stopWord))
                 .map(line -> findWordInLineWorker.doWork(stopWord, stopWord, line))
@@ -40,4 +40,5 @@ public class WordCountingProcessBuilderProcessImpl implements BuilderProcessServ
                 .map(word -> terminatedProcessService.start(stopWord, word))
                 .orElse(null);
     }
+
 }

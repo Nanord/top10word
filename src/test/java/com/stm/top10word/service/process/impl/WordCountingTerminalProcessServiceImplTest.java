@@ -1,18 +1,13 @@
 package com.stm.top10word.service.process.impl;
 
 import com.stm.top10word.configuration.ExecutorConfiguration;
-import com.stm.top10word.service.process.StarterProcessService;
 import com.stm.top10word.service.process.TerminalProcessService;
-import com.stm.top10word.service.worker.QueueWorkerService;
 import com.stm.top10word.utils.BlockingQueueUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -20,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class WordCountingTerminalProcessServiceImplTest {
 

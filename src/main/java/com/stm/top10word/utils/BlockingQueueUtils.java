@@ -1,7 +1,6 @@
 package com.stm.top10word.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -10,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 public class BlockingQueueUtils {
 
     private static Integer waitPut = 10;
-    private static Integer waitPoll = 01;
+    private static Integer waitPoll = 10;
 
     public static <T> boolean putObjectInQueue(T object, BlockingQueue<T> blockingQueue) {
         return putObjectInQueue(object, blockingQueue, waitPut, TimeUnit.MINUTES);
@@ -20,9 +19,7 @@ public class BlockingQueueUtils {
         try {
             blockingQueue.offer(object, time, timeUnit);
             return true;
-        } catch (InterruptedException e) {
-            log.warn("Queue is full! Not insert element: {}", object, e);
-        }
+        } catch (InterruptedException e) {}
         log.warn("Queue is full! Not insert element: {}", object);
         return false;
     }

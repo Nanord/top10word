@@ -5,7 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -18,8 +19,8 @@ public class IsNotEmptyFilterServiceImplTest {
         String v1 = "";
         String v2 = "word";
 
-        assertEquals(false, isNotEmptyFilterService.check(v1));
-        assertEquals(true, isNotEmptyFilterService.check(v2));
+        assertFalse(isNotEmptyFilterService.check(v1));
+        assertTrue(isNotEmptyFilterService.check(v2));
     }
 
 }

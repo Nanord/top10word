@@ -5,7 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 @ExtendWith(SpringExtension.class)
@@ -21,10 +22,10 @@ public class IsNotNumericFilterServiceImplTest {
         String v3 = "1,0";
         String v4 = "word";
 
-        assertEquals(false, isNotNumericFilterService.check(v1));
-        assertEquals(true, isNotNumericFilterService.check(v2));
-        assertEquals(true, isNotNumericFilterService.check(v3));
-        assertEquals(true, isNotNumericFilterService.check(v4));
+        assertFalse(isNotNumericFilterService.check(v1));
+        assertTrue(isNotNumericFilterService.check(v2));
+        assertTrue(isNotNumericFilterService.check(v3));
+        assertTrue(isNotNumericFilterService.check(v4));
     }
 
 }

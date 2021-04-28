@@ -27,8 +27,6 @@ public class WordCountingTerminalProcessServiceImpl implements TerminalProcessSe
 
     @Qualifier("threadPoolTaskExecutorTerminated")
     private final ThreadPoolTaskExecutor threadPoolTaskExecutorTerminated;
-    @Value("${terminated.queue.size}")
-    private Integer queueSize;
 
     @Override
     public CompletableFuture<Map<String, Integer>> start(String stopWord, BlockingQueue<String> inputQueue) {
@@ -42,25 +40,12 @@ public class WordCountingTerminalProcessServiceImpl implements TerminalProcessSe
     }
 
     private Map<String, Integer> combineWordCountMap(String stopWord, BlockingQueue<String> inputQueue) {
-        log.info("Start terminate");
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
         Map<String, Integer> result = new HashMap<>();
         String word = BlockingQueueUtils.takeObjectFromQueue(inputQueue);
-        int i = 0;
         while (word != null && !Objects.equals(stopWord, word)) {
             putWordToMap(word, result);
-            i += 1;
             word = BlockingQueueUtils.takeObjectFromQueue(inputQueue);
         }
-        if(Objects.equals(stopWord, word)) {
-            System.out.println("stopSLOVO ter");
-        } else {
-            System.out.println("null term(");
-        }
-        stopWatch.stop();
-        CommonUtils.printExecutionTime("Terminal process. " +  i + " words counted",
-                stopWatch.getLastTaskTimeMillis());
         return result;
     }
 
