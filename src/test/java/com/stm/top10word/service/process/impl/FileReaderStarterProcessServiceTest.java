@@ -27,12 +27,10 @@ public class FileReaderStarterProcessServiceTest {
 
     private FileReaderStarterProcessService fileReaderStarterProcessService;
 
-    private final String stopWord = "STOP-WORD";
-
     @Before
     public void prepare() {
         ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
-        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeReader", 1);
+        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeStarter", 1);
         threadPoolTaskExecutorStarter = executorConfiguration.threadPoolTaskExecutorStarter();
         fileReaderStarterProcessService = new FileReaderStarterProcessService(threadPoolTaskExecutorStarter);
         ReflectionTestUtils.setField(fileReaderStarterProcessService, "queueSize", 3);
@@ -50,6 +48,7 @@ public class FileReaderStarterProcessServiceTest {
                 + File.separator + "dirwithtextfiles"
                 + File.separator + "file");
 
+        String stopWord = "STOP-WORD";
         BlockingQueue<String> fQ =  fileReaderStarterProcessService.start(path, stopWord);
 
         Map<String, Integer> result = new HashMap<>();

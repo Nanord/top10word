@@ -1,6 +1,21 @@
 package com.stm.top10word.service.filters;
 
-public interface FilterService {
+/**
+ * Общий фильтр объекта. Реализация паттерна цепочка обязанностей
+ *
+ * @author STMLabs
+ */
+public interface FilterService<T> {
+    /**
+     * На основе этого значения выстраивается цепочка фильтров
+     *
+     * @return значение приоритета
+     */
     int getPriority();
-    boolean check(String t);
+
+    /**
+     * @param t проверяемый объект
+     * @return рузльтат проверки
+     */
+    boolean check(T t);
 }

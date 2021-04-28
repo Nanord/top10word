@@ -34,7 +34,7 @@ public class FilterWordMapperQueueWorkerServiceImplTest {
     @Before
     public void prepare() {
         ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
-        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeReader", 10);
+        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeStarter", 10);
         threadPoolTaskExecutor = executorConfiguration.threadPoolTaskExecutorStarter();
         threadPoolTaskExecutor.initialize();
     }

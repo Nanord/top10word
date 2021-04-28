@@ -19,19 +19,18 @@ import static org.junit.Assert.assertEquals;
 
 public class WordCountingTerminalProcessServiceImplTest {
 
-    private ThreadPoolTaskExecutor threadPoolTaskExecutorStarter;
+    private ThreadPoolTaskExecutor threadPoolTaskExecutorTerminated;
 
     private TerminalProcessService<String, Map<String, Integer>> terminatedProcessService;
 
     @Before
     public void setUp() {
         ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
-        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeReader", 10);
-        threadPoolTaskExecutorStarter = executorConfiguration.threadPoolTaskExecutorStarter();
-        threadPoolTaskExecutorStarter.initialize();
+        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeTerminated", 10);
+        threadPoolTaskExecutorTerminated = executorConfiguration.threadPoolTaskExecutorTerminated();
+        threadPoolTaskExecutorTerminated.initialize();
 
-        terminatedProcessService = new WordCountingTerminalProcessServiceImpl(threadPoolTaskExecutorStarter);
-        ReflectionTestUtils.setField(terminatedProcessService, "queueSize", 3);
+        terminatedProcessService = new WordCountingTerminalProcessServiceImpl(threadPoolTaskExecutorTerminated);
 
     }
 
@@ -40,11 +39,11 @@ public class WordCountingTerminalProcessServiceImplTest {
 
         String stopWord = UUID.randomUUID().toString();
 
-        BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>(3);
+        BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>(4);
         BlockingQueueUtils.putObjectInQueue("Vestibulum", blockingQueue);
         BlockingQueueUtils.putObjectInQueue("Endgame", blockingQueue);
         BlockingQueueUtils.putObjectInQueue("Vestibulum", blockingQueue);
-
+        BlockingQueueUtils.putObjectInQueue(stopWord, blockingQueue);
 
         CompletableFuture<Map<String, Integer>> result = terminatedProcessService.start(stopWord, blockingQueue);
         assertEquals(2, result.get().get("Vestibulum").intValue());

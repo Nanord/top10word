@@ -2,15 +2,12 @@ package com.stm.top10word.service.process.impl;
 
 import com.stm.top10word.service.process.TerminalProcessService;
 import com.stm.top10word.utils.BlockingQueueUtils;
-import com.stm.top10word.utils.CommonUtils;
 import com.stm.top10word.utils.MultithreadingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
 import java.util.Collections;
 import java.util.HashMap;

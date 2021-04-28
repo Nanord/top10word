@@ -47,7 +47,7 @@ public class Top10WordProcessRunnerServiceImplTest {
     public void prepare() {
 
         ExecutorConfiguration executorConfiguration = new ExecutorConfiguration();
-        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeReader", 10);
+        ReflectionTestUtils.setField(executorConfiguration, "threadPoolSizeStarter", 10);
         threadPoolTaskExecutorStarter = executorConfiguration.threadPoolTaskExecutorStarter();
         threadPoolTaskExecutorStarter.initialize();
 
@@ -55,7 +55,6 @@ public class Top10WordProcessRunnerServiceImplTest {
         ReflectionTestUtils.setField(starterProcessService, "queueSize", 3);
 
         terminatedProcessService = new WordCountingTerminalProcessServiceImpl(threadPoolTaskExecutorStarter);
-        ReflectionTestUtils.setField(terminatedProcessService, "queueSize", 3);
 
         findWordInLineWorker = new FindWordInLineMapperQueueWorkerServiceImpl(threadPoolTaskExecutorStarter);
         ReflectionTestUtils.setField(findWordInLineWorker, "delimiter", "\\s+");

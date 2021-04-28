@@ -10,15 +10,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Slf4j
 public class ExecutorConfiguration {
     @Value("${starter.thread.pool.size:6}")
-    private Integer threadPoolSizeReader;
+    private Integer threadPoolSizeStarter;
     @Value("${worker.thread.pool.size:6}")
     private Integer threadPoolSizeWorker;
     @Value("${terminated.thread.pool.size:6}")
-    private Integer getThreadPoolSizeTerminated;
+    private Integer threadPoolSizeTerminated;
 
     @Bean
     public ThreadPoolTaskExecutor threadPoolTaskExecutorStarter() {
-        return createExecutor("starter-", threadPoolSizeReader);
+        return createExecutor("starter-", threadPoolSizeStarter);
     }
 
 
@@ -27,8 +27,9 @@ public class ExecutorConfiguration {
         return createExecutor("worker-", threadPoolSizeWorker);
     }
 
-    @Bean ThreadPoolTaskExecutor threadPoolTaskExecutorTerminated() {
-        return createExecutor("terminated-", getThreadPoolSizeTerminated);
+    @Bean
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorTerminated() {
+        return createExecutor("terminated-", threadPoolSizeTerminated);
     }
 
     private ThreadPoolTaskExecutor createExecutor(String prefix, Integer size) {
